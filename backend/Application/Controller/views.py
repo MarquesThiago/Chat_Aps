@@ -1,12 +1,18 @@
 from django.shortcuts import render
-from django.http import (HttpResponse, JsonResponse) 
+from django.http import (HttpResponse, JsonResponse, HttpResponseBadRequest, 
+    HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError) 
 from django.views.decorators.csrf import csrf_exempt
 from json import  loads
 
+
+# function multi-used 
 def req_decode(request):
     json_text = request.body.decode("utf-8")
     return loads(json_text)
 
+# home
+# virifed user 
+# locahost/
 @csrf_exempt
 def index(request):
     body = req_decode(request = request)
@@ -16,49 +22,57 @@ def index(request):
             "id_user" : "12345687932", 
             })
     else:
+        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
 
-        return JsonResponse({"verify" : "False"})
-
+# information of user 
+# localhost/userInfo
 @csrf_exempt
 def user(request):
     body = req_decode(request = request)
     user = body["id_user"]
     test = body["test"]
     if user in (None, ""):
-        return HttpResponse("Don't insered id_user valild")
-    elif user not in (None, "") and test in ("False", "false", False):
-        return HttpResponse("Don't Found User")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
+    elif user not in (None, "") and test not in ("True", "true", True):
+        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
     else:
         return JsonResponse({
-            "name": "Luis Herique",
+            "name":  "Luis Herique",
             "Cargo": "Analista Field Service Pleno",
-            "Dept": "Tecnologia da Informação",
+            "Dept":  "Tecnologia da Informação",
             "Email": "LuizHerinque@verdinhooverde.com.br",
-            "phone": "(55) 11 987456898"})
+            "phone": "(55) 11 987456898"
+        })
 
+#search group or people 
+#localhost/search
 @csrf_exempt
 def seach_group(request):
     body = req_decode(request= request)
     user = body["names"]
     test = body["test"]
     if user in (None, ""):
-        return HttpResponse("Don't insered name valild")
-    elif user not in (None, "") and test in ("False", "false", False):
-            return HttpResponse("Don't Found User")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
+    elif user not in (None, "") and test not in ("True", "true", True):
+        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
     else:
-        return JsonResponse({ "users" : 
+        return JsonResponse({ 
+            "status": "true", 
+            "users" : 
             "[{name: manoel siqueira Averlar, id_group: 123456879 }, {name: Franscisoc almeida, id_group: 123456789}]"
         })
 
+# last people or group user talk
+# localhost/cache
 @csrf_exempt
 def cache_user(request):
     body = req_decode(request = request)
     user = body["id_user"]
     test = body["test"]
     if user in (None, ""):
-        return HttpResponse("Don't insered id_user valild")
-    elif user not in (None, "") and test in ("False", "false", False):
-        return HttpResponse("Don't Found User")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
+    elif user not in (None, "") and test not in ("True", "true", True):
+        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
     else:
         return JsonResponse({
           "user" : """ [ {'name': 'Luis Herique',
@@ -72,6 +86,8 @@ def cache_user(request):
             'Email': 'manoelsousa@verdinhooverde.com.br',
             'phone': '(55) 11 987456898'} ]"""})
 
+#return messages
+# localhost/message
 @csrf_exempt
 def message(request):
     body = req_decode(request = request)
