@@ -3,6 +3,7 @@ from django.http import (HttpResponse, JsonResponse, HttpResponseBadRequest,
     HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError) 
 from django.views.decorators.csrf import csrf_exempt
 from json import  loads
+from .models import *
 
 
 # function multi-used 
@@ -16,13 +17,19 @@ def req_decode(request):
 @csrf_exempt
 def index(request):
     body = req_decode(request = request)
-    if body['test'] in ( "true", "True", True):
-        return JsonResponse({
-            "verify":"True", 
-            "id_user" : "12345687932", 
-            })
+    mail = body["email"]
+    password = body["password"]
+    if password not in (None, "", " ") or mail not in (None, "", " "):
+        
+        user = valit_user(password= password, mail= mail)
+        
+        if "error" not in  user.keys():
+            return JsonResponse(user)
+        else:
+            return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
+    
     else:
-        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
 
 # information of user 
 # localhost/userInfo
@@ -30,19 +37,14 @@ def index(request):
 def user(request):
     body = req_decode(request = request)
     user = body["id_user"]
-    test = body["test"]
     if user in (None, ""):
-        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
-    elif user not in (None, "") and test not in ("True", "true", True):
-        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")    
     else:
-        return JsonResponse({
-            "name":  "Luis Herique",
-            "Cargo": "Analista Field Service Pleno",
-            "Dept":  "Tecnologia da Informação",
-            "Email": "LuizHerinque@verdinhooverde.com.br",
-            "phone": "(55) 11 987456898"
-        })
+        info = info_user(id_user= user)
+        if "error" not in info.keys():
+            return JsonResponse(info)
+        else: 
+            return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
 
 #search group or people 
 #localhost/search
