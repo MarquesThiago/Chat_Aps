@@ -2,6 +2,7 @@ from django.db import models
 from .Models.user import (User)
 from .Models.group import (Group)
 from .Models.connect_user import (Connection)
+from .Models.historic import (Historic)
 
 def valit_user(mail, password ):
     try: 
