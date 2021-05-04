@@ -22,7 +22,8 @@ def server(host, port):
         server.listen()
         print('servidor conectado')
         return server
-    connect_server(port, host)
+    
+    return connect_server(port, host)
 
 
     def receive_client_request():
@@ -31,6 +32,7 @@ def server(host, port):
             address = (host, port)
             client, address = server.accept()
             print("Connected with")
+            
         return client
 
     def submit_mensagem(mensagem):

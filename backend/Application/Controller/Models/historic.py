@@ -11,12 +11,12 @@ class Historic(models.Model):
     dt_create = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        user = [id["id_user"] for id in self.id_user.values()]
-        group = [id["id_group"] for id in self.id_user.values()]
+        user = self.id_user
+        group = self.id_group
         return f"""
             id_message : {self.id_message}, \n
-            Remetente: {user}, \n
-            id_group: {group}, \n
+            Remetente: {user.id_user}, \n
+            id_group: {group.id_group}, \n
             content: {self.content}, \n
             link: {self.link}, \n
             dt_create: {self.dt_create}
