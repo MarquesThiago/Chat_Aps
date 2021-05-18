@@ -26,7 +26,7 @@ if %response% equ 3 goto quit
 :server_back
     cls
     cd ./backend/Scripts
-    activate &&  cd ../../_utils && echo Starting server- \ - / - && start "Starr Server Backend" activate_server_back.bat && cd ..
+    activate &&  cd ../../_utils && echo Starting server- \ - / - && start "Starting Server Backend" activate_server_back.bat && cd ..
  
 :quit
     echo arigatou gozaimasu, itterashai!!!!!!!!

@@ -1,83 +1,74 @@
-import socket
-import threading
+import socket, threading, time
 
-client_list = []
-def port_free(ports, host):
-    for port in ports:
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            server.bind((host, port))
-            return port, host
-        except:
-            print("porta fechada")
-        finally:
-            server.close()
+SERVER_IP = socket.gethostbyname(socket.gethostname())
+print(socket.gethostbyname(socket.gethostname()))
+PORT = 5051
+ADDR = (SERVER_IP, PORT)
+FORMAT = 'utf-8'
 
-def server(host, port):
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(ADDR)
+# server.settimeout(10.0)
 
+connections = []
+messages = []
 
-    def connect_server(port,host):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((host, port))
-        server.listen()
-        print('servidor conectado')
-        return server
-    connect_server(port, host)
+def send_message(connection):
+    print('Sending messages...')
+    for i in range(connection['last'], len(messages)):
+        sending_message = 'msg=' + messages[i]
+        connection['conn'].send(sending_message.encode())
+        connection['last'] = i + 1
+        time.sleep(0.2)
 
+def send_message_all():
+    global connections
+    for connection in connections:
+        send_message(connection)
 
-    def receive_client_request():
-        while True:
-            # Accept Connection
-            address = (host, port)
-            client, address = server.accept()
-            print("Connected with")
-        return client
+def handle_clients(conn, addr):
+    print(f'New connection: {addr}')
+    global connections
+    global messages
+    name = False
 
-    def submit_mensagem(mensagem):
-        for client in client_list:
-            client.send(mensagem)
-
-
-    def receive_client_message(client):
-        while True:
-            try:
-                message = client.recv(1024)
-                thread = threading.Thread(target=submit_mensagem, args=(message,))
-                thread.start()
-            except Exception as e:
-                # remove disconnected client
-                print(e)
-                index = client_list.index(client)
-                client_list.remove(client)
-                client.close()
-                break
-        return message
-
-    def submit_file(client):
-        name_file = client.recv(1024).decode()
-        try:
-            with open(name_file, 'rb') as file:
-                for data in file.readlines():
-                    client.send(data)
-        except Exception as e:
-            print("An exception occurred", e)
-
-
-    def execute_func_server(client):
-
-        receive_and_listener_thread = threading.Thread(target=receive_client_request)
-        receive_and_listener_thread.start()
+    while(True):
+        msg = conn.recv(1024).decode(FORMAT)
+        if(msg):
+            if(msg.startswith('name=')):
+                splited_message = msg.split('=')
+                name = splited_message[1]
+                connection_map = {
+                    'conn': conn,
+                    'addr': addr,
+                    'name': name,
+                    'last': 0
+                }
+                connections.append(connection_map)
+                send_message(connection_map)
+            elif(msg.startswith('msg=')):
+                splited_message = msg.split('=')
+                message = f'{name}={splited_message[1]}'
+                messages.append(message)
+                send_message_all()
+            elif(msg.startswith('file=')):
+                splited_message = msg.split('=')
+                name_file = splited_message[1]
+                print(name_file)
+                try:
+                    with open(name_file, 'rb') as file:
+                        for data in file.readlines():
+                            conn.send(data)
+                except Exception as e:
+                    print("An exception occurred", e)
 
 
-        receive_client_message_thread = threading.Thread(target=receive_client_message)
-        receive_client_message_thread.start()
+def start():
+    print('Starting the server')
+    server.listen()
+    while True:
+        conn, addr = server.accept()
+        thread = threading.Thread(target=handle_clients, args=(conn, addr))
+        thread.start()
 
-
-        submit_file_thread = threading.Thread(target=submit_file, args=(client,))
-        submit_file_thread.start()
-
-    execute_func_server_thread = threading.Thread(target=execute_func_server)
-    execute_func_server_thread.start()
-
-
-
+start()

@@ -1,68 +1,61 @@
-import socket
-import threading
-import time
+import socket, threading, time
 
-# ter portas diferentes
+SERVER = "172.18.64.1"
+PORT = 5051
+ADDR = (SERVER, PORT)
+FORMAT = 'utf-8'
 
-host = '127.0.0.1'
-port = 1000
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(ADDR)
+# client.settimeout(10.0)
 
-try:
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((host, port))
-except Exception as inst:
-    print(inst)
-
-"""
-def receive_connection_to_server():
+def handle_messages():
     while True:
-        try:
-            # request for echo connection from server
-            message = client.recv(1024).decode('utf-8')
-        except Exception as inst:
-            # Close Connection
-            print(inst)
-            client.close()
-            break
-            """
+        msg = client.recv(100000).decode()
+        splited_message = msg.split('=')
+        print(f'{splited_message[1]}: {splited_message[2]}')
 
 
-def send_message_to_server():
-    run = True
-    while run:
-        time.sleep(1)
-        print(f'digite a mensagem>>>')
-        message = f'{input()}'
-
-        if(message == f'{"enviar"}'):
-            name_file = str(input('digite o nome do arquivo>>>'))
-            client.send(name_file.encode())
-            receive_file_thread = threading.Thread(target=receive_file, args=(name_file,))
-            receive_file_thread.start()
-        else:
-            client.send(message.encode('utf-8'))
+def send(message):
+    client.send(message.encode(FORMAT))
 
 
-def receive_file(name_file):
-    # le e monta o arquivo
-    #
+def send_messages():
+    message = input('Send a message: ')
+    send(f'msg={message}')
+
+def send_files():
+    time.sleep(1)
+    message = input('Send a file: ')
+    send(f'file={message}')
     try:
-        with open(name_file, 'rb') as file:
+        # rb, cause exception is a read error
+        with open(message, 'w') as file:
             while True:
-                data = client.recv(1000000)
-                if not data:
+                data = client.recv(1000000).decode('utf-8')
+                if not message:
                     break
+                print('iniciando tranferência de arquivo')
                 file.write(data)
-        print(f'{name_file} recebido')
-    except Exception as inst:
-        print(inst)
-    client.close()
+            # file.close()
 
+            print(f'{message} foi recebido')
+    except Exception as e:
+        print("An exception occurred", e)
 
-# Starting Threads
-#receive_thread = threading.Thread(target=receive_connection_to_server)
-#receive_thread.start()
+def send_author():
+    name = input('Write your nickname: ')
+    send(f'name={name}')
 
-send_thread = threading.Thread(target=send_message_to_server)
-send_thread.start()
+def start_sending():
+    send_author()
+    send_messages()
+    # send_files()
 
+def start():
+    thread1 = threading.Thread(target=handle_messages)
+    thread2 = threading.Thread(target=start_sending)
+    thread1.start()
+    thread2.start()
+
+start()
