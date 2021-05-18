@@ -6,7 +6,7 @@ class Group(models.Model):
     name = models.CharField(max_length = 80, null = False, blank = False)
     type = models.CharField(max_length = 3 ,null = False, blank = False)
     dt_created = models.DateTimeField(auto_now_add = True)
-    id_user = models.ManyToManyField(User)
+    id_user = models.ManyToManyField(User, related_name= "pk_group_id_user")
 
     def __str__(self):
         user = [ id["id_user"] for id in self.id_user.values()]
@@ -17,6 +17,3 @@ class Group(models.Model):
             users: {user}\n
             dt_created: {self.dt_created}
             """
-
-            
-        

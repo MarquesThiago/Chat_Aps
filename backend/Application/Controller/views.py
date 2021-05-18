@@ -71,12 +71,8 @@ def cache_user(request):
     body = req_decode(request = request)
     user = body["id_user"]
     test = body["test"]
-    if user in (None, ""):
-        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
-    elif user not in (None, "") and test not in ("True", "true", True):
-        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
-    else:
-        return JsonResponse({
+    cache_chat(user)
+    return JsonResponse({
           "user" : """ [ {'name': 'Luis Herique',
             'Cargo': 'Analista Field Service Pleno',
             'Dept': 'Tecnologia da Informação',
@@ -93,4 +89,13 @@ def cache_user(request):
 @csrf_exempt
 def message(request):
     body = req_decode(request = request)
-    return JsonResponse({"response" : "{user: 'Leonardo', 'message' : 'você é um babaca' }"})
+    group = body["id_group"]
+    if user in (None, ""):
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")    
+    else:
+        historic_message = historic(id_group = group)
+        if "error" not in historic_message.keys():
+            return JsonResponse({"historic": historic_message})
+        else: 
+            HttpResponseNotFound("ERROR: 404 - Not Found Messages in Server")
+   

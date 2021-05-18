@@ -16,18 +16,29 @@ active_py.bat
 
 * locahost/
     * login User
+    * received Email and PAssoword
+    * return id_user
 
 * locahost/userInfo
-    * information of the user 
+    * information of the user
+    * received id_user
+    * return object json with information of user 
 
 * locahost/search 
     * search user ou group by name
+    * receive names
+    * return list name group and id group
 
 * locahost/cache
     * last talks of the user 
+    * received id_user
+    * return last messages of groups  
 
 * message
     * message received
+    * received id_group
+    * return last messages of group
+
 
 
 
