@@ -52,13 +52,30 @@ def cache_chat(id_user):
     try: 
         user = User.objects.get(pk = id_user)
         groups = Group.objects.filter(id_user = user)
-
         hist = Historic.objects.filter(id_group__in = groups).order_by(Lower("dt_create").desc())
-        hist_grouped = hist.values_list("id_group", "dt_create").aggregate(Group = Max("id_group"),dt_max = Max("dt_create"))
-        print(hist_grouped)
-        list_id_group = [ item["Group"] for item in hist_grouped.values()]
-    
+        hist_grouped = hist.val
+        list_id_group = [item["Group"]for item in hist_grouped.values()]
+        return {[ {"name": index["name"],"id" : index["id_group"]} for index in list_id_group[:12]]}
+
     except Exception:
         print("error")
         return {"error": Exception}
 
+def searcher(names):
+    try:
+        users = User.objects.filter(name__contains = names)
+        names = [ {"name": user["name"], "id" : user["id_user"]} for user in users.values()]
+        groups = []
+        duos = []
+        for user_int in users:
+            groups = Group.objects.filter(id_user__contains = user_int)
+        result = groups
+        if len(groups) < 8:
+            different = 8  - len(groups)
+            try: 
+                result.extend(users[:different])
+            except:
+                pass
+        return result
+    except Exception:
+        return {"error": Exception}

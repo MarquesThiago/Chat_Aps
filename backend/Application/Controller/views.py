@@ -51,18 +51,16 @@ def user(request):
 @csrf_exempt
 def seach_group(request):
     body = req_decode(request= request)
-    user = body["names"]
+    name = body["names"]
     test = body["test"]
     if user in (None, ""):
-        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")
-    elif user not in (None, "") and test not in ("True", "true", True):
-        return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")    
     else:
-        return JsonResponse({ 
-            "status": "true", 
-            "users" : 
-            "[{name: manoel siqueira Averlar, id_group: 123456879 }, {name: Franscisoc almeida, id_group: 123456789}]"
-        })
+        response = searcher(name)
+        if "error" not in response.keys():
+            return JsonResponse(response)
+        else: 
+            return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
 
 # last people or group user talk
 # localhost/cache
@@ -70,19 +68,14 @@ def seach_group(request):
 def cache_user(request):
     body = req_decode(request = request)
     user = body["id_user"]
-    test = body["test"]
-    cache_chat(user)
-    return JsonResponse({
-          "user" : """ [ {'name': 'Luis Herique',
-            'Cargo': 'Analista Field Service Pleno',
-            'Dept': 'Tecnologia da Informação',
-            'Email': 'LuizHerinque@verdinhooverde.com.br',
-            'phone': '(55) 11 987456898'} , 
-            {'name': 'Manoel Sousa',
-            'Cargo': 'Analista Flutuaçao Pleno',
-            'Dept': 'CRM',
-            'Email': 'manoelsousa@verdinhooverde.com.br',
-            'phone': '(55) 11 987456898'} ]"""})
+    if user in (None, ""):
+        return HttpResponseBadRequest("ERROR: 400 - Don't insered user valild")    
+    else:
+        try:
+            response = cache_chat(user)
+            return JsonResponse(response)
+        except:
+            return HttpResponseNotFound("ERROR: 404 - Not Found User in Server")
 
 #return messages
 # localhost/message
